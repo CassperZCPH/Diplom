@@ -4,12 +4,18 @@ using System.Drawing;
 using WIA;
 using System.Runtime.InteropServices;
 using System.IO;
+using Emgu.CV;
+using Emgu.CV.Structure;
 
 namespace WindowsFormsApp1
 {
     public partial class Form1 : Form
     {
+        JournalRecognizer journalRecognizer = new JournalRecognizer();
+
         private DeviceInfo AvailableScanner = null;
+
+        private Image<Bgr, byte> inputImage = null;
 
         public Form1()
         {
@@ -39,12 +45,12 @@ namespace WindowsFormsApp1
             }
         }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
+        private void PictureBox1_Click(object sender, EventArgs e)
         {
 
         }
 
-        private void btnScan_Click(object sender, EventArgs e)
+        private void BtnScan_Click(object sender, EventArgs e)
         {
             try
             {
@@ -70,12 +76,47 @@ namespace WindowsFormsApp1
                 byte[] imageBites = (byte[])imgFile.FileData.get_BinaryData();
                 MemoryStream ms = new MemoryStream(imageBites);
                 pictureBox1.Image = Image.FromStream(ms);
-                return;
             }
             catch (COMException ex)
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private void BtnOpen_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                pictureBox1.Image = Image.FromFile(openFileDialog1.FileName);
+                inputImage = new Image<Bgr, byte>(openFileDialog1.FileName);
+            }
+/*
+            try
+            {
+                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    pictureBox1.Image = Image.FromFile(openFileDialog1.FileName);
+                    inputImage = new Image<Bgr, byte>(openFileDialog1.FileName);
+                }
+                else
+                {
+                    MessageBox.Show("Файл не выбран", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }*/
+        }
+
+        private void openFileDialog1_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+
+        }
+
+        private void btnProcess_Click(object sender, EventArgs e)
+        {
+            journalRecognizer.DetectGrid(inputImage);
         }
     }
 }
