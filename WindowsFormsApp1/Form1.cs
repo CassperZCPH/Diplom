@@ -45,11 +45,6 @@ namespace WindowsFormsApp1
             }
         }
 
-        private void PictureBox1_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void BtnScan_Click(object sender, EventArgs e)
         {
             try
@@ -88,7 +83,7 @@ namespace WindowsFormsApp1
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 pictureBox1.Image = Image.FromFile(openFileDialog1.FileName);
-                inputImage = new Image<Bgr, byte>(openFileDialog1.FileName);
+                //inputImage = new Image<Bgr, byte>(openFileDialog1.FileName);
             }
 /*
             try
