@@ -11,11 +11,9 @@ namespace JournalReader
 {
     public partial class Form1 : Form
     {
-        JournalRecognizer journalRecognizer = new JournalRecognizer();
-
-        private DeviceInfo AvailableScanner = null;
-
-        private Image<Bgr, byte> inputImage = null;
+        GridHandler gridHandler = new GridHandler();
+        private DeviceInfo AvailableScanner;
+        private Image<Bgr, byte> inputImage;
 
         public Form1()
         {
@@ -43,6 +41,8 @@ namespace JournalReader
             {
                 MessageBox.Show(ex.Message);
             }
+            
+            if (AvailableScanner != null) btnScan.Enabled = true;
         }
 
         private void BtnScan_Click(object sender, EventArgs e)
@@ -66,11 +66,15 @@ namespace JournalReader
                 }*/
                 Device device = AvailableScanner.Connect();
                 Item scanerItem = device.Items[1];
-                IImageFile imgFile = (ImageFile)scanerItem.Transfer(FormatID.wiaFormatJPEG);
-                
-                byte[] imageBites = (byte[])imgFile.FileData.get_BinaryData();
+                IImageFile imageFile = (ImageFile)scanerItem.Transfer(FormatID.wiaFormatJPEG);
+                //inputImage = (Image<Bgr, byte>)scanerItem.Transfer(FormatID.wiaFormatJPEG);
+                inputImage = (Image<Bgr, byte>)imageFile;
+
+                byte[] imageBites = (byte[])imageFile.FileData.get_BinaryData();
                 MemoryStream ms = new MemoryStream(imageBites);
                 pictureBox1.Image = Image.FromStream(ms);
+
+                btnProcess.Enabled = true;
             }
             catch (COMException ex)
             {
@@ -86,29 +90,22 @@ namespace JournalReader
                 {
                     pictureBox1.Image = Image.FromFile(openFileDialog1.FileName);
                     inputImage = new Image<Bgr, byte>(openFileDialog1.FileName);
-                }
-                else
-                {
-                    MessageBox.Show("Файл не выбран", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    btnProcess.Enabled = true;
                 }
             }
-            catch (Exception)
+            catch (OutOfMemoryException)
             {
                 MessageBox.Show("Неверный формат файла", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void btnProcess_Click(object sender, EventArgs e)
+        private void BtnProcess_Click(object sender, EventArgs e)
         {
-            if (inputImage == null)
-            {
-                MessageBox.Show("Изображение не выбрано", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            else
-            {
-                journalRecognizer.DetectGrid(inputImage, out MemoryStream streamImage);
-                pictureBox1.Image = Image.FromStream(streamImage);
-            }
+            Image<Bgr, byte> viewImage = inputImage.Copy();
+            gridHandler.DetectGrid(ref viewImage);
+            gridHandler.DetectIntersect(ref viewImage);
+            pictureBox1.Image = Image.FromStream(new MemoryStream(viewImage.ToJpegData()));
         }
     }
 }

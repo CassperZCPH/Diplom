@@ -247,7 +247,6 @@ C:\Users\Fedor\Desktop\Diplom\JournalReader\JournalReader\bin\Debug\System.Xml.X
 C:\Users\Fedor\Desktop\Diplom\JournalReader\JournalReader\bin\Debug\Emgu.CV.Platform.NetStandard.dll
 C:\Users\Fedor\Desktop\Diplom\JournalReader\JournalReader\bin\Debug\Emgu.CV.Platform.NetStandard.xml
 C:\Users\Fedor\Desktop\Diplom\JournalReader\JournalReader\bin\Debug\Interop.WIA.dll
-C:\Users\Fedor\Desktop\Diplom\JournalReader\JournalReader\obj\Debug\JournalReader.csprojAssemblyReference.cache
 C:\Users\Fedor\Desktop\Diplom\JournalReader\JournalReader\obj\Debug\JournalReader.exe.config
 C:\Users\Fedor\Desktop\Diplom\JournalReader\JournalReader\obj\Debug\Interop.WIA.dll
 C:\Users\Fedor\Desktop\Diplom\JournalReader\JournalReader\obj\Debug\JournalReader.csproj.ResolveComReference.cache
@@ -258,3 +257,4 @@ C:\Users\Fedor\Desktop\Diplom\JournalReader\JournalReader\obj\Debug\JournalReade
 C:\Users\Fedor\Desktop\Diplom\JournalReader\JournalReader\obj\Debug\JournalReader.csproj.CopyComplete
 C:\Users\Fedor\Desktop\Diplom\JournalReader\JournalReader\obj\Debug\JournalReader.exe
 C:\Users\Fedor\Desktop\Diplom\JournalReader\JournalReader\obj\Debug\JournalReader.pdb
+C:\Users\Fedor\Desktop\Diplom\JournalReader\JournalReader\obj\Debug\JournalReader.csproj.AssemblyReference.cache
