@@ -11,13 +11,21 @@ namespace JournalReader
 {
     public partial class Form1 : Form
     {
-        GridHandler gridHandler = new GridHandler();
+        private GridHandler gridHandler = new GridHandler();
         private DeviceInfo AvailableScanner;
         private Image<Bgr, byte> inputImage;
+
+        private Rectangle selRect;
+        private Point orig;
+        private Pen pen = new Pen(Brushes.OrangeRed, 2.0f) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash };
 
         public Form1()
         {
             InitializeComponent();
+            pictureBox1.Paint += PictureBox1_Paint;
+            pictureBox1.MouseMove += PictureBox1_MouseMove;
+            pictureBox1.MouseUp += PictureBox1_MouseUp;
+            pictureBox1.MouseDown += PictureBox1_MouseDown;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -25,7 +33,6 @@ namespace JournalReader
             try
             {
                 DeviceManager deviceManager = new DeviceManager();
-
                 for (int i = 1; i <= deviceManager.DeviceInfos.Count; i++)
                 {
                     if (deviceManager.DeviceInfos[i].Type != WiaDeviceType.ScannerDeviceType)
@@ -33,7 +40,7 @@ namespace JournalReader
                         continue;
                     }
                     AvailableScanner = deviceManager.DeviceInfos[i];
-                    ListOfScan.Items.Add(AvailableScanner.Properties["Name"].get_Value());
+                    comboBox1.Items.Add(AvailableScanner.Properties["Name"].get_Value());
                     break;
                 }
             }
@@ -41,7 +48,12 @@ namespace JournalReader
             {
                 MessageBox.Show(ex.Message);
             }
-            
+
+            if (comboBox1.Items.Count == 0)
+            {
+                comboBox1.Enabled = false;
+                comboBox1.Text = " Нет подключённых устройств";
+            }
             if (AvailableScanner != null) btnScan.Enabled = true;
         }
 
@@ -88,6 +100,10 @@ namespace JournalReader
             {
                 if (openFileDialog1.ShowDialog() == DialogResult.OK)
                 {
+                    /*Size vol = Image.FromFile(openFileDialog1.FileName).Size;
+                    double scaleVol = (double)vol.Height / vol.Width;
+                    double width = pictureBox1.Height / scaleVol;
+                    pictureBox1.Width = (int)width;*/
                     pictureBox1.Image = Image.FromFile(openFileDialog1.FileName);
                     inputImage = new Image<Bgr, byte>(openFileDialog1.FileName);
 
@@ -106,6 +122,65 @@ namespace JournalReader
             gridHandler.DetectGrid(ref viewImage);
             gridHandler.DetectIntersect(ref viewImage);
             pictureBox1.Image = Image.FromStream(new MemoryStream(viewImage.ToJpegData()));
+        }
+
+        private void PictureBox1_MouseUp(object sender, MouseEventArgs e)
+        {
+            //Возвращаем основную процедуру рисования
+            pictureBox1.Paint -= SelectionPaint;
+            pictureBox1.Paint += PictureBox1_Paint;
+            pictureBox1.Invalidate();
+        }
+
+        private void PictureBox1_MouseDown(object sender, MouseEventArgs e)
+        {
+            //Назначаем процедуру рисования при выделении
+            pictureBox1.Paint -= PictureBox1_Paint;
+            pictureBox1.Paint += SelectionPaint;
+            orig = e.Location;
+        }
+
+        private void PictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            //при движении мышкой считаем прямоугольник и обновляем picturebox
+            selRect = GetSelRectangle(orig, e.Location);
+            if (e.Button == MouseButtons.Left) (sender as PictureBox).Refresh();
+        }
+
+        //основное событие рисования
+        private void PictureBox1_Paint(object sender, PaintEventArgs e)
+        {
+            e.Graphics.DrawRectangle(new Pen(Color.Black, 2.0f), selRect);
+        }
+
+        //Рисование мышкой с нажатой кнопкой
+        private void SelectionPaint(object sender, PaintEventArgs e)
+        {
+            e.Graphics.DrawRectangle(pen, selRect);
+        }
+
+        private Rectangle GetSelRectangle(Point orig, Point location)
+        {
+            int deltaX = location.X - orig.X, deltaY = location.Y - orig.Y;
+            Size s = new Size(Math.Abs(deltaX), Math.Abs(deltaY));
+            Rectangle rect = new Rectangle();
+            if (deltaX >= 0 & deltaY >= 0)
+            {
+                rect = new Rectangle(orig, s);
+            }
+            else if (deltaX < 0 & deltaY > 0)
+            {
+                rect = new Rectangle(location.X, orig.Y, s.Width, s.Height);
+            }
+            else if (deltaX < 0 & deltaY < 0)
+            {
+                rect = new Rectangle(location, s);
+            }
+            else if (deltaX > 0 & deltaY < 0)
+            {
+                rect = new Rectangle(orig.X, location.Y, s.Width, s.Height);
+            }
+            return rect;
         }
     }
 }

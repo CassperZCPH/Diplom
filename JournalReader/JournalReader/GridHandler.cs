@@ -85,6 +85,7 @@ namespace JournalReader
                     }
                 }
             }
+            CvInvoke.Imwrite("imageGrid2.jpg", image);
         }
 
         private Point Intersection(LineSegment2D line1, LineSegment2D line2)
