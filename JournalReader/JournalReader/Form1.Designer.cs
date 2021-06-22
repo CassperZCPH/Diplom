@@ -38,17 +38,21 @@
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.btnProcess = new System.Windows.Forms.Button();
             this.panelPictureBox = new System.Windows.Forms.Panel();
+            this.labelPictureBox = new System.Windows.Forms.Label();
             this.labelTrackBar = new System.Windows.Forms.Label();
             this.trackBar1 = new System.Windows.Forms.TrackBar();
             this.btnSelect = new System.Windows.Forms.Button();
             this.panelProcess = new System.Windows.Forms.Panel();
             this.labelProcess = new System.Windows.Forms.Label();
-            this.labelPictureBox = new System.Windows.Forms.Label();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.btnSave = new System.Windows.Forms.Button();
             this.panelSource.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panelPictureBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.panelProcess.SuspendLayout();
+            this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // panelSource
@@ -163,6 +167,18 @@
             this.panelPictureBox.Size = new System.Drawing.Size(675, 795);
             this.panelPictureBox.TabIndex = 3;
             // 
+            // labelPictureBox
+            // 
+            this.labelPictureBox.AutoSize = true;
+            this.labelPictureBox.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.labelPictureBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelPictureBox.ForeColor = System.Drawing.Color.Crimson;
+            this.labelPictureBox.Location = new System.Drawing.Point(323, 694);
+            this.labelPictureBox.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
+            this.labelPictureBox.Name = "labelPictureBox";
+            this.labelPictureBox.Size = new System.Drawing.Size(0, 24);
+            this.labelPictureBox.TabIndex = 4;
+            // 
             // labelTrackBar
             // 
             this.labelTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -225,14 +241,43 @@
             this.labelProcess.TabIndex = 6;
             this.labelProcess.Text = "Обработка";
             // 
-            // labelPictureBox
+            // panel1
             // 
-            this.labelPictureBox.AutoSize = true;
-            this.labelPictureBox.Location = new System.Drawing.Point(320, 721);
-            this.labelPictureBox.Name = "labelPictureBox";
-            this.labelPictureBox.Size = new System.Drawing.Size(35, 13);
-            this.labelPictureBox.TabIndex = 4;
-            this.labelPictureBox.Text = "label1";
+            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.checkBox1);
+            this.panel1.Controls.Add(this.btnSave);
+            this.panel1.Location = new System.Drawing.Point(32, 464);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(298, 125);
+            this.panel1.TabIndex = 5;
+            // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.checkBox1.Enabled = false;
+            this.checkBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.checkBox1.Location = new System.Drawing.Point(25, 85);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(257, 20);
+            this.checkBox1.TabIndex = 5;
+            this.checkBox1.Text = "Сохранить вместе с изображением";
+            this.checkBox1.UseVisualStyleBackColor = true;
+            // 
+            // btnSave
+            // 
+            this.btnSave.BackColor = System.Drawing.Color.Gainsboro;
+            this.btnSave.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnSave.Enabled = false;
+            this.btnSave.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.btnSave.ForeColor = System.Drawing.Color.Black;
+            this.btnSave.Location = new System.Drawing.Point(72, 25);
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(156, 54);
+            this.btnSave.TabIndex = 4;
+            this.btnSave.Text = "Сохранить";
+            this.btnSave.UseVisualStyleBackColor = false;
+            this.btnSave.Click += new System.EventHandler(this.BtnSelect_Click);
             // 
             // Form1
             // 
@@ -244,7 +289,9 @@
             this.Controls.Add(this.labelSource);
             this.Controls.Add(this.panelSource);
             this.Controls.Add(this.panelPictureBox);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.panelProcess);
+            this.Cursor = System.Windows.Forms.Cursors.Default;
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(1050, 830);
@@ -259,6 +306,8 @@
             this.panelPictureBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
             this.panelProcess.ResumeLayout(false);
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -281,5 +330,8 @@
         private System.Windows.Forms.TrackBar trackBar1;
         private System.Windows.Forms.Label labelTrackBar;
         private System.Windows.Forms.Label labelPictureBox;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Button btnSave;
+        private System.Windows.Forms.CheckBox checkBox1;
     }
 }

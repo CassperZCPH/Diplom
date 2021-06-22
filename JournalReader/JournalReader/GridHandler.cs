@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using Emgu.CV;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
@@ -12,6 +13,7 @@ namespace JournalReader
     {
         private List<LineSegment2D> lineList = new List<LineSegment2D>();
         private List<Point> pointList = new List<Point>();
+        int firstLeftX, secondLeftX, topY, bottomY;
 
         public void DetectGrid(ref Image<Bgr, byte> image)
         {
@@ -42,9 +44,9 @@ namespace JournalReader
 
                     bool condAlternationLines = CheckAlternationLines(new LineSegment2D(pt1, pt2));
                     bool condDiagonal = Math.Abs(pt1.X - pt2.X) > 10 && Math.Abs(pt1.Y - pt2.Y) > 10;
-                    bool condLeftEdge = pt1.X > 0 && pt1.X < image.Width * 0.33; // && !(pt1.X > image.Width*0.15 && pt1.X < image.Width*0.16);
-                    bool condTopEdge = pt1.Y > 0 && pt1.Y < image.Height * 0.1;
-                    bool condBottomEdge = pt1.Y > image.Height * 0.92 && pt1.Y < image.Height;
+                    bool condLeftEdge = pt1.X > 0 && pt1.X < secondLeftX && !(pt1.X == firstLeftX);//!(Enumerable.Range(firstLeftX - 2, 4).ToList().IndexOf(firstLeftX) != -1);
+                    bool condTopEdge = pt1.Y > 0 && pt1.Y < topY;
+                    bool condBottomEdge = pt1.Y > bottomY && pt1.Y < image.Height;
 
                     if (condDiagonal || condLeftEdge || condTopEdge || condBottomEdge) continue;
                     if (condAlternationLines) continue;
@@ -64,6 +66,18 @@ namespace JournalReader
                 if (condX && condY) return true;
             }
             return false;
+        }
+
+        public void SetEdgeDetect(int firstLeftX, int topY, int bottomY)
+        {
+            this.firstLeftX = firstLeftX;
+            this.topY = topY;
+            this.bottomY = bottomY;
+        }
+
+        public void SetEdgeDetect(int secondLeftX)
+        {
+            this.secondLeftX = secondLeftX;
         }
 
         public void DetectIntersect(ref Image<Bgr, byte> image)
@@ -95,7 +109,7 @@ namespace JournalReader
             double det = A1 * B2 - A2 * B1;
             if (det == 0)
             {
-                return new Point(0, 0); //paralel line
+                return new Point(0, 0);
             }
             else
             {

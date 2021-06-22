@@ -20,9 +20,10 @@ namespace JournalReader
         private Size pictureSize;
         private Rectangle selectRect;
         private Point startPoint;
-        private Pen pen = new Pen(Brushes.OrangeRed, 3) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash };
+        private Pen pen = new Pen(Brushes.Crimson, 3) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash };
 
-        private bool isClicked = false;
+        //private bool isClicked = false;
+        private byte countRect = 0;
 
         public Form1()
         {
@@ -117,12 +118,27 @@ namespace JournalReader
 
         private void BtnSelect_Click(object sender, EventArgs e)
         {
-            if (isClicked)
+            btnSelect.BackColor = Color.Crimson;
+            btnScan.Enabled = false;
+            btnOpen.Enabled = false;
+            btnSelect.Enabled = false;
+            btnProcess.Enabled = false;
+            trackBar1.Enabled = false;
+            pictureBox1.Paint += PictureBox1_Paint;
+            pictureBox1.MouseMove += PictureBox1_MouseMove;
+            pictureBox1.MouseUp += PictureBox1_MouseUp;
+            pictureBox1.MouseDown += PictureBox1_MouseDown;
+            //isClicked = true;
+            labelPictureBox.Text = "Выделите основную область";
+            labelPictureBox.Location = new Point(panelPictureBox.Width / 2 - labelPictureBox.Width / 2, (panelPictureBox.Height + pictureBox1.Height) / 2 - labelPictureBox.Height);
+            
+            /*if (isClicked)
             {
                 btnSelect.BackColor = Color.Gainsboro;
                 if (availableScanner != null) btnScan.Enabled = true;
                 btnOpen.Enabled = true;
                 btnProcess.Enabled = true;
+                trackBar1.Enabled = true;
                 pictureBox1.Paint -= PictureBox1_Paint;
                 pictureBox1.MouseMove -= PictureBox1_MouseMove;
                 pictureBox1.MouseUp -= PictureBox1_MouseUp;
@@ -131,16 +147,19 @@ namespace JournalReader
             }
             else
             {
-                btnSelect.BackColor = Color.IndianRed;
+                btnSelect.BackColor = Color.Crimson;
                 btnScan.Enabled = false;
                 btnOpen.Enabled = false;
                 btnProcess.Enabled = false;
+                trackBar1.Enabled = false;
                 pictureBox1.Paint += PictureBox1_Paint;
                 pictureBox1.MouseMove += PictureBox1_MouseMove;
                 pictureBox1.MouseUp += PictureBox1_MouseUp;
                 pictureBox1.MouseDown += PictureBox1_MouseDown;
                 isClicked = true;
-            }
+                labelPictureBox.Text = "Выделите основную область";
+                labelPictureBox.Location = new Point(panelPictureBox.Width / 2 - labelPictureBox.Width / 2, (panelPictureBox.Height + pictureBox1.Height) / 2 - labelPictureBox.Height);
+            }*/
         }
 
         private void BtnProcess_Click(object sender, EventArgs e)
@@ -159,15 +178,44 @@ namespace JournalReader
 
         private void PictureBox1_MouseUp(object sender, MouseEventArgs e)
         {
-            //Возвращаем основную процедуру рисования
             pictureBox1.Paint -= SelectionPaint;
             pictureBox1.Paint += PictureBox1_Paint;
             pictureBox1.Invalidate();
+
+            if (selectRect.Size != new Size(0, 0)) countRect++;
+
+            float scale = (float)inputImage.Height / pictureBox1.Height;
+            switch (countRect)
+            {
+                case 1:
+                    int firstLeftX = (int)(selectRect.X * scale);
+                    int topY = (int)(selectRect.Y * scale);
+                    int bottomY = (int)(selectRect.Bottom * scale);
+                    gridHandler.SetEdgeDetect(firstLeftX, topY, bottomY);
+                    labelPictureBox.Text = "Выделите область оценок";
+                    break;
+                case 2:
+                    labelPictureBox.Text = "";
+                    int secondLeftX = (int)(selectRect.X * scale);
+                    gridHandler.SetEdgeDetect(secondLeftX);
+
+                    btnSelect.BackColor = Color.Gainsboro;
+                    if (availableScanner != null) btnScan.Enabled = true;
+                    btnOpen.Enabled = true;
+                    btnSelect.Enabled = true;
+                    btnProcess.Enabled = true;
+                    trackBar1.Enabled = true;
+                    pictureBox1.Paint -= PictureBox1_Paint;
+                    pictureBox1.MouseMove -= PictureBox1_MouseMove;
+                    pictureBox1.MouseUp -= PictureBox1_MouseUp;
+                    pictureBox1.MouseDown -= PictureBox1_MouseDown;
+                    //isClicked = false;
+                    break;
+            }
         }
 
         private void PictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
-            //Назначаем процедуру рисования при выделении
             pictureBox1.Paint -= PictureBox1_Paint;
             pictureBox1.Paint += SelectionPaint;
             startPoint = e.Location;
@@ -175,18 +223,15 @@ namespace JournalReader
 
         private void PictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
-            //при движении мышкой считаем прямоугольник и обновляем picturebox
             selectRect = GetSelRectangle(startPoint, e.Location);
             if (e.Button == MouseButtons.Left) (sender as PictureBox).Refresh();
         }
 
-        //основное событие рисования
         private void PictureBox1_Paint(object sender, PaintEventArgs e)
         {
             e.Graphics.DrawRectangle(new Pen(Color.Black, 3), selectRect);
         }
 
-        //Рисование мышкой с нажатой кнопкой
         private void SelectionPaint(object sender, PaintEventArgs e)
         {
             e.Graphics.DrawRectangle(pen, selectRect);
