@@ -10,7 +10,6 @@ namespace JournalReader
 {
     class GridHandler
     {
-        //private LineSegment2D[] lines;
         private List<LineSegment2D> lineList = new List<LineSegment2D>();
         private List<Point> pointList = new List<Point>();
 
@@ -19,8 +18,6 @@ namespace JournalReader
             Image<Gray, byte> edge = new Image<Gray, byte>(image.Width, image.Height, new Gray(0));
 
             CvInvoke.Canny(image, edge, 50, 150);
-
-            //CvInvoke.CvtColor(edge, copyedge, Emgu.CV.CvEnum.ColorConversion.Gray2Bgr);
 
             lineList.Clear();
 
@@ -32,12 +29,12 @@ namespace JournalReader
                 {
                     float rho = vector[i].X;
                     float theta = vector[i].Y;
-                    Point pt1 = new Point();
-                    Point pt2 = new Point();
                     double a = Math.Cos(theta);
                     double b = Math.Sin(theta);
                     double x0 = a * rho;
                     double y0 = b * rho;
+                    Point pt1 = new Point();
+                    Point pt2 = new Point();
                     pt1.X = (int)Math.Round(x0 + image.Width * (-b));
                     pt1.Y = (int)Math.Round(y0 + image.Height * a);
                     pt2.X = (int)Math.Round(x0 - image.Width * (-b));
@@ -55,14 +52,12 @@ namespace JournalReader
                     lineList.Add(new LineSegment2D(pt1, pt2));
                     CvInvoke.Line(image, pt1, pt2, new Bgr(Color.Red).MCvScalar, 3, LineType.AntiAlias);
                 }
-                //lines = lineList.ToArray();
             }
-            //CvInvoke.Imwrite("imageGrid.jpg", image);
         }
 
         private bool CheckAlternationLines(LineSegment2D lineSegment)
         {
-            for (int i = 0; i < lineList.Count; i++)
+            for (byte i = 0; i < lineList.Count; i++)
             {
                 bool condX = Math.Abs(lineSegment.P1.X - lineList[i].P1.X) < 40 && Math.Abs(lineSegment.P2.X - lineList[i].P2.X) < 40;
                 bool condY = Math.Abs(lineSegment.P1.Y - lineList[i].P1.Y) < 40 && Math.Abs(lineSegment.P2.Y - lineList[i].P2.Y) < 40;
@@ -73,9 +68,9 @@ namespace JournalReader
 
         public void DetectIntersect(ref Image<Bgr, byte> image)
         {
-            for (int i = 0; i < lineList.Count; i++)
+            for (byte i = 0; i < lineList.Count; i++)
             {
-                for (int j = 0; j < lineList.Count; j++)
+                for (byte j = 0; j < lineList.Count; j++)
                 {
                     Point intersection = Intersection(lineList[i], lineList[j]);
                     if (!intersection.Equals(new Point(0, 0)))
@@ -85,7 +80,6 @@ namespace JournalReader
                     }
                 }
             }
-            CvInvoke.Imwrite("imageGrid2.jpg", image);
         }
 
         private Point Intersection(LineSegment2D line1, LineSegment2D line2)

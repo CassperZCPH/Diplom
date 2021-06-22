@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Runtime.InteropServices;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Drawing;
-using WIA;
-using System.Runtime.InteropServices;
 using System.IO;
+using WIA;
 using Emgu.CV;
 using Emgu.CV.Structure;
 
@@ -11,21 +12,25 @@ namespace JournalReader
 {
     public partial class Form1 : Form
     {
-        private GridHandler gridHandler = new GridHandler();
-        private DeviceInfo AvailableScanner;
+        private List<DeviceInfo> scanners = new List<DeviceInfo>();
+        private DeviceInfo availableScanner;
         private Image<Bgr, byte> inputImage;
+        private GridHandler gridHandler = new GridHandler();
+        
+        private Size pictureSize;
+        private Rectangle selectRect;
+        private Point startPoint;
+        private Pen pen = new Pen(Brushes.OrangeRed, 3) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash };
 
-        private Rectangle selRect;
-        private Point orig;
-        private Pen pen = new Pen(Brushes.OrangeRed, 2.0f) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash };
+        private bool isClicked = false;
 
         public Form1()
         {
             InitializeComponent();
-            pictureBox1.Paint += PictureBox1_Paint;
-            pictureBox1.MouseMove += PictureBox1_MouseMove;
-            pictureBox1.MouseUp += PictureBox1_MouseUp;
-            pictureBox1.MouseDown += PictureBox1_MouseDown;
+            pictureSize = pictureBox1.Size;
+            SizeChanged += Form1_SizeChanged;
+            comboBoxScan.SelectedIndexChanged += ComboBoxScan_SelectedIndexChanged;
+            trackBar1.Scroll += TrackBar1_Scroll;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -33,15 +38,11 @@ namespace JournalReader
             try
             {
                 DeviceManager deviceManager = new DeviceManager();
-                for (int i = 1; i <= deviceManager.DeviceInfos.Count; i++)
+                for (byte i = 1; i <= deviceManager.DeviceInfos.Count; i++)
                 {
-                    if (deviceManager.DeviceInfos[i].Type != WiaDeviceType.ScannerDeviceType)
-                    {
-                        continue;
-                    }
-                    AvailableScanner = deviceManager.DeviceInfos[i];
-                    comboBox1.Items.Add(AvailableScanner.Properties["Name"].get_Value());
-                    break;
+                    if (deviceManager.DeviceInfos[i].Type != WiaDeviceType.ScannerDeviceType) continue;
+                    comboBoxScan.Items.Add(deviceManager.DeviceInfos[i].Properties["Name"].get_Value());
+                    scanners.Add(deviceManager.DeviceInfos[i]);
                 }
             }
             catch (COMException ex)
@@ -49,44 +50,41 @@ namespace JournalReader
                 MessageBox.Show(ex.Message);
             }
 
-            if (comboBox1.Items.Count == 0)
+            if (comboBoxScan.Items.Count == 0)
             {
-                comboBox1.Enabled = false;
-                comboBox1.Text = " Нет подключённых устройств";
+                comboBoxScan.Enabled = false;
+                comboBoxScan.Text = " Нет подключённых устройств";
             }
-            if (AvailableScanner != null) btnScan.Enabled = true;
+        }
+
+        private void Form1_SizeChanged(object sender, EventArgs e)
+        {
+            pictureBox1.Location = new Point(panelPictureBox.Width / 2 - pictureBox1.Width / 2, panelPictureBox.Height / 2 - pictureBox1.Height / 2);
         }
 
         private void BtnScan_Click(object sender, EventArgs e)
         {
             try
             {
-                /*DeviceManager deviceManager = new DeviceManager();
-
-                DeviceInfo AvailableScanner = null;
-
-                for (int i = 1; i <= deviceManager.DeviceInfos.Count; i++)
-                {
-                    if (deviceManager.DeviceInfos[i].Type != WiaDeviceType.ScannerDeviceType)
-                    {
-                        continue;
-                    }
-
-                    AvailableScanner = deviceManager.DeviceInfos[i];
-
-                    break;
-                }*/
-                Device device = AvailableScanner.Connect();
+                Device device = availableScanner.Connect();
                 Item scanerItem = device.Items[1];
                 IImageFile imageFile = (ImageFile)scanerItem.Transfer(FormatID.wiaFormatJPEG);
-                //inputImage = (Image<Bgr, byte>)scanerItem.Transfer(FormatID.wiaFormatJPEG);
-                inputImage = (Image<Bgr, byte>)imageFile;
+
+                string fileName = "JR_scan_image_" + DateTime.Now.ToString().Replace(".", "-").Replace(" ", "-").Replace(":", "-");
+                imageFile.SaveFile(fileName);
+                inputImage = new Image<Bgr, byte>(fileName);
+
+                float scaleImage = (float)inputImage.Size.Height / inputImage.Size.Width;
+                float width = pictureBox1.Height / scaleImage;
+                pictureBox1.Width = (int)width;
+                pictureSize = pictureBox1.Size;
 
                 byte[] imageBites = (byte[])imageFile.FileData.get_BinaryData();
                 MemoryStream ms = new MemoryStream(imageBites);
                 pictureBox1.Image = Image.FromStream(ms);
 
-                btnProcess.Enabled = true;
+                btnSelect.Enabled = true;
+                btnProcess.Enabled = false;
             }
             catch (COMException ex)
             {
@@ -100,19 +98,48 @@ namespace JournalReader
             {
                 if (openFileDialog1.ShowDialog() == DialogResult.OK)
                 {
-                    /*Size vol = Image.FromFile(openFileDialog1.FileName).Size;
-                    double scaleVol = (double)vol.Height / vol.Width;
-                    double width = pictureBox1.Height / scaleVol;
-                    pictureBox1.Width = (int)width;*/
-                    pictureBox1.Image = Image.FromFile(openFileDialog1.FileName);
                     inputImage = new Image<Bgr, byte>(openFileDialog1.FileName);
+                    float scaleImage = (float)inputImage.Size.Height / inputImage.Size.Width;
+                    float width = pictureBox1.Height / scaleImage ;
+                    pictureBox1.Width = (int)width;
+                    pictureSize = pictureBox1.Size;
+                    pictureBox1.Image = Image.FromFile(openFileDialog1.FileName);
 
-                    btnProcess.Enabled = true;
+                    btnSelect.Enabled = true;
+                    btnProcess.Enabled = false;
                 }
             }
             catch (OutOfMemoryException)
             {
                 MessageBox.Show("Неверный формат файла", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void BtnSelect_Click(object sender, EventArgs e)
+        {
+            if (isClicked)
+            {
+                btnSelect.BackColor = Color.Gainsboro;
+                if (availableScanner != null) btnScan.Enabled = true;
+                btnOpen.Enabled = true;
+                btnProcess.Enabled = true;
+                pictureBox1.Paint -= PictureBox1_Paint;
+                pictureBox1.MouseMove -= PictureBox1_MouseMove;
+                pictureBox1.MouseUp -= PictureBox1_MouseUp;
+                pictureBox1.MouseDown -= PictureBox1_MouseDown;
+                isClicked = false;
+            }
+            else
+            {
+                btnSelect.BackColor = Color.IndianRed;
+                btnScan.Enabled = false;
+                btnOpen.Enabled = false;
+                btnProcess.Enabled = false;
+                pictureBox1.Paint += PictureBox1_Paint;
+                pictureBox1.MouseMove += PictureBox1_MouseMove;
+                pictureBox1.MouseUp += PictureBox1_MouseUp;
+                pictureBox1.MouseDown += PictureBox1_MouseDown;
+                isClicked = true;
             }
         }
 
@@ -122,6 +149,12 @@ namespace JournalReader
             gridHandler.DetectGrid(ref viewImage);
             gridHandler.DetectIntersect(ref viewImage);
             pictureBox1.Image = Image.FromStream(new MemoryStream(viewImage.ToJpegData()));
+        }
+
+        private void ComboBoxScan_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            availableScanner = scanners[comboBoxScan.SelectedIndex];
+            btnScan.Enabled = true;
         }
 
         private void PictureBox1_MouseUp(object sender, MouseEventArgs e)
@@ -137,70 +170,58 @@ namespace JournalReader
             //Назначаем процедуру рисования при выделении
             pictureBox1.Paint -= PictureBox1_Paint;
             pictureBox1.Paint += SelectionPaint;
-            orig = e.Location;
+            startPoint = e.Location;
         }
 
         private void PictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
             //при движении мышкой считаем прямоугольник и обновляем picturebox
-            selRect = GetSelRectangle(orig, e.Location);
+            selectRect = GetSelRectangle(startPoint, e.Location);
             if (e.Button == MouseButtons.Left) (sender as PictureBox).Refresh();
         }
 
         //основное событие рисования
         private void PictureBox1_Paint(object sender, PaintEventArgs e)
         {
-            e.Graphics.DrawRectangle(new Pen(Color.Black, 2.0f), selRect);
+            e.Graphics.DrawRectangle(new Pen(Color.Black, 3), selectRect);
         }
 
         //Рисование мышкой с нажатой кнопкой
         private void SelectionPaint(object sender, PaintEventArgs e)
         {
-            e.Graphics.DrawRectangle(pen, selRect);
+            e.Graphics.DrawRectangle(pen, selectRect);
         }
 
-        private Rectangle GetSelRectangle(Point orig, Point location)
+        private void TrackBar1_Scroll(object sender, EventArgs e)
         {
-            int deltaX = location.X - orig.X, deltaY = location.Y - orig.Y;
-            Size s = new Size(Math.Abs(deltaX), Math.Abs(deltaY));
+            pictureBox1.Size = new Size(pictureSize.Width * trackBar1.Value / 100, pictureSize.Height * trackBar1.Value / 100);
+            pictureBox1.Location = new Point(panelPictureBox.Width / 2 - pictureBox1.Width / 2, panelPictureBox.Height / 2 - pictureBox1.Height / 2);
+            labelTrackBar.Text = trackBar1.Value.ToString() + "%";
+        }
+
+        private Rectangle GetSelRectangle(Point pt1, Point pt2)
+        {
+            int deltaX = pt2.X - pt1.X;
+            int deltaY = pt2.Y - pt1.Y;
+            Size sizeRect = new Size(Math.Abs(deltaX), Math.Abs(deltaY));
             Rectangle rect = new Rectangle();
             if (deltaX >= 0 & deltaY >= 0)
             {
-                rect = new Rectangle(orig, s);
+                rect = new Rectangle(pt1, sizeRect);
             }
             else if (deltaX < 0 & deltaY > 0)
             {
-                rect = new Rectangle(location.X, orig.Y, s.Width, s.Height);
-            }
-            else if (deltaX < 0 & deltaY < 0)
-            {
-                rect = new Rectangle(location, s);
+                rect = new Rectangle(pt2.X, pt1.Y, sizeRect.Width, sizeRect.Height);
             }
             else if (deltaX > 0 & deltaY < 0)
             {
-                rect = new Rectangle(orig.X, location.Y, s.Width, s.Height);
+                rect = new Rectangle(pt1.X, pt2.Y, sizeRect.Width, sizeRect.Height);
+            }
+            else if (deltaX < 0 & deltaY < 0)
+            {
+                rect = new Rectangle(pt2, sizeRect);
             }
             return rect;
         }
     }
 }
-
-/* для сохранения
-string path = @"C:\Users\Каспер\Desktop\Дэплом\Сканы";
-string fileName = @"\ScanImg1.jpg";
-
-if (!Directory.Exists(path))
-{
-    Directory.CreateDirectory(path);
-}
-
-path += fileName;
-
-if (File.Exists(path))
-{
-    int index = path.LastIndexOf("Img1") + 3;
-    int numberOfFile = Convert.ToInt32(path[index]);
-    numberOfFile += 1;
-    path.Replace("Img1", "Img" + Convert.ToChar(numberOfFile));
-}
-*/
