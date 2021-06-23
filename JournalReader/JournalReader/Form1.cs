@@ -22,7 +22,6 @@ namespace JournalReader
         private Point startPoint;
         private Pen pen = new Pen(Brushes.Crimson, 3) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash };
 
-        //private bool isClicked = false;
         private byte countRect = 0;
 
         public Form1()
@@ -128,38 +127,7 @@ namespace JournalReader
             pictureBox1.MouseMove += PictureBox1_MouseMove;
             pictureBox1.MouseUp += PictureBox1_MouseUp;
             pictureBox1.MouseDown += PictureBox1_MouseDown;
-            //isClicked = true;
             labelPictureBox.Text = "Выделите основную область";
-            labelPictureBox.Location = new Point(panelPictureBox.Width / 2 - labelPictureBox.Width / 2, (panelPictureBox.Height + pictureBox1.Height) / 2 - labelPictureBox.Height);
-            
-            /*if (isClicked)
-            {
-                btnSelect.BackColor = Color.Gainsboro;
-                if (availableScanner != null) btnScan.Enabled = true;
-                btnOpen.Enabled = true;
-                btnProcess.Enabled = true;
-                trackBar1.Enabled = true;
-                pictureBox1.Paint -= PictureBox1_Paint;
-                pictureBox1.MouseMove -= PictureBox1_MouseMove;
-                pictureBox1.MouseUp -= PictureBox1_MouseUp;
-                pictureBox1.MouseDown -= PictureBox1_MouseDown;
-                isClicked = false;
-            }
-            else
-            {
-                btnSelect.BackColor = Color.Crimson;
-                btnScan.Enabled = false;
-                btnOpen.Enabled = false;
-                btnProcess.Enabled = false;
-                trackBar1.Enabled = false;
-                pictureBox1.Paint += PictureBox1_Paint;
-                pictureBox1.MouseMove += PictureBox1_MouseMove;
-                pictureBox1.MouseUp += PictureBox1_MouseUp;
-                pictureBox1.MouseDown += PictureBox1_MouseDown;
-                isClicked = true;
-                labelPictureBox.Text = "Выделите основную область";
-                labelPictureBox.Location = new Point(panelPictureBox.Width / 2 - labelPictureBox.Width / 2, (panelPictureBox.Height + pictureBox1.Height) / 2 - labelPictureBox.Height);
-            }*/
         }
 
         private void BtnProcess_Click(object sender, EventArgs e)
@@ -209,7 +177,8 @@ namespace JournalReader
                     pictureBox1.MouseMove -= PictureBox1_MouseMove;
                     pictureBox1.MouseUp -= PictureBox1_MouseUp;
                     pictureBox1.MouseDown -= PictureBox1_MouseDown;
-                    //isClicked = false;
+
+                    countRect = 0;
                     break;
             }
         }

@@ -44,7 +44,7 @@ namespace JournalReader
 
                     bool condAlternationLines = CheckAlternationLines(new LineSegment2D(pt1, pt2));
                     bool condDiagonal = Math.Abs(pt1.X - pt2.X) > 10 && Math.Abs(pt1.Y - pt2.Y) > 10;
-                    bool condLeftEdge = pt1.X > 0 && pt1.X < secondLeftX && !(pt1.X == firstLeftX);//!(Enumerable.Range(firstLeftX - 2, 4).ToList().IndexOf(firstLeftX) != -1);
+                    bool condLeftEdge = (pt1.X > 0 && pt1.X < firstLeftX) || (pt1.X > firstLeftX+5 && pt1.X < secondLeftX);
                     bool condTopEdge = pt1.Y > 0 && pt1.Y < topY;
                     bool condBottomEdge = pt1.Y > bottomY && pt1.Y < image.Height;
 

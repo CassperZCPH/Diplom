@@ -158,7 +158,6 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panelPictureBox.BackColor = System.Drawing.Color.Gray;
             this.panelPictureBox.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.panelPictureBox.Controls.Add(this.labelPictureBox);
             this.panelPictureBox.Controls.Add(this.labelTrackBar);
             this.panelPictureBox.Controls.Add(this.trackBar1);
             this.panelPictureBox.Controls.Add(this.pictureBox1);
@@ -173,7 +172,7 @@
             this.labelPictureBox.BackColor = System.Drawing.Color.WhiteSmoke;
             this.labelPictureBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.labelPictureBox.ForeColor = System.Drawing.Color.Crimson;
-            this.labelPictureBox.Location = new System.Drawing.Point(323, 694);
+            this.labelPictureBox.Location = new System.Drawing.Point(44, 621);
             this.labelPictureBox.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
             this.labelPictureBox.Name = "labelPictureBox";
             this.labelPictureBox.Size = new System.Drawing.Size(0, 24);
@@ -285,6 +284,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.WhiteSmoke;
             this.ClientSize = new System.Drawing.Size(1041, 791);
+            this.Controls.Add(this.labelPictureBox);
             this.Controls.Add(this.labelProcess);
             this.Controls.Add(this.labelSource);
             this.Controls.Add(this.panelSource);
